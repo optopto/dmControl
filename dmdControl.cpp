@@ -2,12 +2,11 @@
 #include <iostream>
 #include "TLDFMX.h"
 #include "TLDFM.h"
-//#include "TLDFMX_def.h"
-//#include "TLDFM_def.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <Windows.h>
+#include <math.h>
 
 #ifdef _CVI_
    #define EXIT_SUCCESS 0
@@ -15,6 +14,8 @@
 #endif
 
 #define  MAX_SEGMENTS 40
+#define PI 3.14/180
+#define delta 0.01
 
 using namespace std;
 
@@ -25,7 +26,7 @@ ViStatus  err = VI_SUCCESS;
 ViSession instrHdl = VI_NULL;
 ViChar *rscPtr;
 ViInt32   zernikeCount, systemMeasurementSteps, relaxSteps;
-ViReal64  minZernikeAmplitude, maxZernikeAmplitude, voltage = 50.0;
+ViReal64  minZernikeAmplitude, maxZernikeAmplitude, voltage = 0.0;
 ViReal64  mirrorPattern[MAX_SEGMENTS];
 
 ViChar    manufacturer[TLDFM_BUFFER_SIZE];
@@ -39,9 +40,17 @@ ViBoolean isFirstStep = VI_TRUE, reload = VI_TRUE;
 ViReal64  relaxPattern[MAX_SEGMENTS];
 ViInt32   remainingRelaxSteps;
 
-ViReal64 amplitute = 1;
-ViReal64 angle = -180.0;
-    
+ViReal64 amplitute = 0.54;
+ViReal64 theta = -21.41;
+ViReal64 angle = 0.0;
+ViReal64 alpha = 0.3; 
+ViReal64 newAngle = 0.0;
+ViReal64 newAmplitute = 0.0;
+
+newAmplitute = sqrt(pow(alpha,2)+pow(amplitute,2)+2*amplitute*alpha*cos(PI*(theta - angle)));
+//newAngle = (180/3.14)*atan((amplitute*sin(PI*theta)+alpha*sin(PI*angle))/(amplitute*cos(PI*theta)+alpha*cos(PI*angle))+0.01);
+cout << "amplitude: " << newAmplitute << endl;
+cout << "Angle: " << newAngle << endl;
 for(ViInt32 i = 0; MAX_SEGMENTS > i; ++i)
 	{
 		mirrorPattern[i] = voltage;
@@ -92,23 +101,17 @@ do{TLDFMX_relax(instrHdl, relaxPart, isFirstStep,
     }else{
         cout << "Cambiando angulo de DM" << endl;
         int repeat = 0;
-        while(repeat < 100){    
-        TLDFM_set_tilt_amplitude_angle(instrHdl,1.0,angle);
-        angle++;
+        
+        while(repeat < 60){
+        angle = angle + 10;
+        newAngle =(180/3.14*atan2(amplitute*sin(PI*theta)+alpha*sin(PI*angle),amplitute*cos(PI*theta)+alpha*cos(PI*angle)));  
+        TLDFM_set_tilt_amplitude_angle(instrHdl,newAmplitute,newAngle);
+        cout << newAngle << endl;
+        //Sleep(0.01);
         //cout << angle << endl;
-        if(angle == 180){angle = -180; repeat++;}
+        if(angle == 360){angle = 0; repeat++;}
         }
     }
-/*TLDFM_set_tilt_amplitude_angle(instrHdl,1.0,-180.0);
-Sleep(100);
-TLDFM_set_tilt_amplitude_angle(instrHdl,1.0,0.0);
-Sleep(100);
-TLDFM_set_tilt_amplitude_angle(instrHdl,1.0,180.0);
-Sleep(100);
-TLDFM_set_tilt_amplitude_angle(instrHdl,1.0,-180.0);*/
-
-
-
 
 cout << "Closed DM" << endl;
 TLDFMX_reset(instrHdl);
