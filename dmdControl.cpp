@@ -40,14 +40,14 @@ ViBoolean isFirstStep = VI_TRUE, reload = VI_TRUE;
 ViReal64  relaxPattern[MAX_SEGMENTS];
 ViInt32   remainingRelaxSteps;
 
-ViReal64 amplitute = 0.54;
-ViReal64 theta = -21.41;
-ViReal64 angle = 0.0;
+ViReal64 amplitute = 0.70;
+ViReal64 theta = 45.50;
+ViReal64 angle = -180.0;
 ViReal64 alpha = 0.3; 
 ViReal64 newAngle = 0.0;
 ViReal64 newAmplitute = 0.0;
 
-newAmplitute = sqrt(pow(alpha,2)+pow(amplitute,2)+2*amplitute*alpha*cos(PI*(theta - angle)));
+//newAmplitute = sqrt(pow(alpha,2)+pow(amplitute,2)+2*amplitute*alpha*cos(PI*(theta - angle)));
 //newAngle = (180/3.14)*atan((amplitute*sin(PI*theta)+alpha*sin(PI*angle))/(amplitute*cos(PI*theta)+alpha*cos(PI*angle))+0.01);
 cout << "amplitude: " << newAmplitute << endl;
 cout << "Angle: " << newAngle << endl;
@@ -102,14 +102,15 @@ do{TLDFMX_relax(instrHdl, relaxPart, isFirstStep,
         cout << "Cambiando angulo de DM" << endl;
         int repeat = 0;
         
-        while(repeat < 60){
+        while(repeat < 1000){
         angle = angle + 10;
         newAngle =(180/3.14*atan2(amplitute*sin(PI*theta)+alpha*sin(PI*angle),amplitute*cos(PI*theta)+alpha*cos(PI*angle)));  
+        newAmplitute = sqrt(pow(alpha,2)+pow(amplitute,2)+2*amplitute*alpha*cos(PI*(theta - angle)));
         TLDFM_set_tilt_amplitude_angle(instrHdl,newAmplitute,newAngle);
-        cout << newAngle << endl;
+//        cout << newAngle << endl;
         //Sleep(0.01);
         //cout << angle << endl;
-        if(angle == 360){angle = 0; repeat++;}
+        if(angle == 180){angle = -180; repeat++;}
         }
     }
 
